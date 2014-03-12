@@ -1,3 +1,7 @@
+
+
+
+/*
 var TodoView = Backbone.View.extend({
 
   tagName: 'ul', // required, but defaults to 'div' if not set
@@ -81,3 +85,5 @@ button2.trigger('click'); // returns true
 var view = new Backbone.View;
 view.setElement('<p><a><b>test</b></a></p>');
 console.log(view.$('a b').html()); // outputs "test"
+
+*/
