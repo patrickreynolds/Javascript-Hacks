@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Chapter 2</title>
+		<script type="text/javascript" src="../global/lib/jquery.min.js"></script>
+		<script type="text/javascript" src="../global/lib/underscore-min.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone-min.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone.localStorage.js"></script>
+		<script type="text/javascript" src="../global/lib/bootstrap-3.1.1/js/bootstrap.min.js"></script>
+		<link   type="text/css" rel="stylesheet" href="../global/lib/bootstrap-3.1.1/css/bootstrap.min.css">
+	</head>
+	<body>
+		<section id='container'>
+		</section>
+
+		<script type="text/javascript">
+			var UserView = Backbone.View.extend({
+			 	html: '<button class="btn btn-warning" id="warning">Warning</button><button class="btn btn-success" id="success">Success</button>',
+			  	events: {
+			    	'click #warning': 'onWarningButtonClick',
+			    	'dblclick #warning': 'onWarningButtonDoubleClick',
+			    	'click #success': 'onSuccessButtonClick'
+			  	},
+
+			  	render: function () {
+			    	this.$el.html(this.html);
+			    	return this;
+			  	},
+
+			  	onWarningButtonClick: function () {
+			    	console.log("Warning clicked");
+			  	},
+
+			  	onWarningButtonDoubleClick: function() {
+			  		$(document).on('dblclick', '#warning', function(){
+        				$(this).fadeOut('fast');
+    				});
+			  	},
+
+			  	onSuccessButtonClick: function() {
+			  		alert('Success button!');
+			  	}
+			});
+
+			// create an instance
+			var userView = new UserView();
+			$("#container").append(userView.render().el);
+		</script>
+	</body>
+</html>
