@@ -36,7 +36,7 @@ function guid() {
 
 function contains(array, item) {
   var i = array.length;
-  while (i--) if (array[i] === obj) return true;
+  while (i--) if (array[i] === item) return true;
   return false;
 }
 
@@ -83,7 +83,7 @@ extend(Backbone.LocalStorage.prototype, {
     this.localStorage().setItem(this.name+"-"+model.id, this.serializer.serialize(model));
     this.records.push(model.id.toString());
     this.save();
-    return this.find(model);
+    return this.find(model) !== false;
   },
 
   // Update a model by replacing its copy in `this.data`.
@@ -94,7 +94,7 @@ extend(Backbone.LocalStorage.prototype, {
       this.records.push(modelId);
       this.save();
     }
-    return this.find(model);
+    return this.find(model) !== false;
   },
 
   // Retrieve a model from `this.data` by id.
@@ -108,7 +108,6 @@ extend(Backbone.LocalStorage.prototype, {
     for (var i = 0, id, data; i < this.records.length; i++) {
       id = this.records[i];
       data = this.serializer.deserialize(this.localStorage().getItem(this.name+"-"+id));
-      data = this.jsonData(this.localStorage().getItem(this.name+"-"+id));
       if (data != null) result.push(data);
     }
     return result;
