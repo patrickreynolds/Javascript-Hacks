@@ -14,6 +14,7 @@
 		</section>
 
 		<script type="text/javascript">
+		/*
 			var UserView = Backbone.View.extend({
 			 	html: '<button class="btn btn-warning" id="warning">Warning</button><button class="btn btn-success" id="success">Success</button>',
 			  	events: {
@@ -45,6 +46,72 @@
 			// create an instance
 			var userView = new UserView();
 			$("#container").append(userView.render().el);
+			*/
+		</script>
+
+		<script type="text/javascript">
+			var User = Backbone.Model.extend({});
+			var Car = Backbone.Model.extend({});
+
+			// UserView definition
+			var UserView = Backbone.View.extend({
+				// We will use Underscore template
+				template: _.template('Hello <%= firstName %> <%= lastName %>!'),
+
+				render: function() {
+					if (!this.model) {
+						throw "Model is not set for this view";
+					};
+
+					var html = this.template(this.model.toJSON());
+					this.$el.html(html);
+					return this;
+				}
+			});
+
+			var CarView = Backbone.View.extend({
+				template: _.template('<table><thead><th>Make</th><th>Model</th></thead><tbody><td><%= make %></td><td><%= model %></td></tbody></table>'),
+
+				render: function() {
+					if (!this.model) {
+						throw "Model is not set for this view";
+					};
+
+					var html = this.template(this.model.toJSON());
+					this.$el.html(html);
+					return this;
+				}
+			});
+
+			var userView = new UserView({
+				// Set a model for this view
+				model: new User({
+					firstName: 'Patrick',
+					lastName: 'Reynolds'
+				})
+			});
+
+			var carView = new CarView({
+				model: new Car({
+					make: "BMW",
+					model: "335i"
+				})
+			});
+
+			$("#container").append(userView.render().el);
+			$("#container").append(carView.render().el);
 		</script>
 	</body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
