@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title>Chapter 3</title>
-		<script type="text/javascript" src="../global/lib/jquery.min.js"></script>
+		
 		<script type="text/javascript" src="../global/lib/underscore-min.js"></script>
 		<script type="text/javascript" src="../global/lib/backbone-min.js"></script>
 		<script type="text/javascript" src="../global/lib/backbone.localStorage.js"></script>
@@ -27,7 +27,7 @@
 			newCar.on('change' , function(model, options){
   				console.log(model.changed);
 			});
-			
+
 			newCar.on('change:year', function(model, newYear){
 				console.log(newYear);
 			});
