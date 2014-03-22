@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Chapter 3</title>
+		<script type="text/javascript" src="../global/lib/jquery.min.js"></script>
+		<script type="text/javascript" src="../global/lib/underscore-min.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone-min.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone.localStorage.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone.marionette.js"></script>
+		<script type="text/javascript" src="../global/lib/bootstrap-3.1.1/js/bootstrap.min.js"></script>
+		<link   type="text/css" rel="stylesheet" href="../global/lib/bootstrap-3.1.1/css/bootstrap.min.css">
+	</head>
+	<body>
+		<script type="text/javascript">
+			var Car = Backbone.Model.extend({});
+
+			var newCar = new Car({
+				make: "BMW",
+				model: "335",
+				year: "2008",
+				price: "20000"
+			});
+
+			var carData = JSON.stringify(newCar);
+			console.log(carData);
+
+			newCar.on('change' , function(model, options){
+  				console.log(model.changed);
+			});
+			
+			newCar.on('change:year', function(model, newYear){
+				console.log(newYear);
+			});
+
+			newCar.set('year', "2009");
+			newCar.set('model', 'm3');
+
+			//var carData = JSON.stringify(newCar);
+			//console.log(carData);
+
+		</script>
+	</body>
+</html>
+
+
