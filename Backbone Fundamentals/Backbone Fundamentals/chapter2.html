@@ -6,6 +6,7 @@
 		<script type="text/javascript" src="../global/lib/underscore-min.js"></script>
 		<script type="text/javascript" src="../global/lib/backbone-min.js"></script>
 		<script type="text/javascript" src="../global/lib/backbone.localStorage.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone.marionette.js"></script>
 		<script type="text/javascript" src="../global/lib/bootstrap-3.1.1/js/bootstrap.min.js"></script>
 		<link   type="text/css" rel="stylesheet" href="../global/lib/bootstrap-3.1.1/css/bootstrap.min.css">
 	</head>
@@ -14,104 +15,102 @@
 		</section>
 
 		<script type="text/javascript">
-		/*
-			var UserView = Backbone.View.extend({
-			 	html: '<button class="btn btn-warning" id="warning">Warning</button><button class="btn btn-success" id="success">Success</button>',
-			  	events: {
-			    	'click #warning': 'onWarningButtonClick',
-			    	'dblclick #warning': 'onWarningButtonDoubleClick',
-			    	'click #success': 'onSuccessButtonClick'
+
+			// ---- Model Declarations ----
+			var User = Backbone.Model.extend({});
+
+
+			// ---- Collection Declarations ----
+			var Users = Backbone.Collection.extend({
+			  model: User
+			});
+
+			var users = new Users([{
+			  id: 1,
+			  name: 'John Doe'
+			}, {
+			  id: 2,
+			  name: 'Dan Smith'
+			}]);
+
+
+			// ---- View Declarations ----
+			var ParentView = Backbone.View.extend({
+			  	initialize: function () {
+			    	this.subViews = []; 
+			   
+			   	// Initializing the child views
+			    	this.subViews.push(new ChildView(), new ChildView());
 			  	},
 
 			  	render: function () {
-			    	this.$el.html(this.html);
+			    	this.$el.html(this.template);
+
+			  			// Render each child view
+			    		_(this.subViews).each(function (view) {
+			      		this.$el.append(view.render().el);
+			    	}, this);
+
 			    	return this;
-			  	},
-
-			  	onWarningButtonClick: function () {
-			    	console.log("Warning clicked");
-			  	},
-
-			  	onWarningButtonDoubleClick: function() {
-			  		$(document).on('dblclick', '#warning', function(){
-        				$(this).fadeOut('fast');
-    				});
-			  	},
-
-			  	onSuccessButtonClick: function() {
-			  		alert('Success button!');
 			  	}
 			});
 
-			// create an instance
-			var userView = new UserView();
-			$("#container").append(userView.render().el);
-			*/
-		</script>
 
-		<script type="text/javascript">
-			var User = Backbone.Model.extend({});
-			var Car = Backbone.Model.extend({});
+			var UserItemView = Backbone.View.extend({
+			  tagName: 'li',
+			  template: _.template( '<%= name %>'),
+			  events: {
+			    'click': 'showUserName',
+			    'dblclick': 'alertUserName'
+			  },
+			  render: function () {
+			    var html = this.template(this.model.toJSON());
+			    this.$el.html(html);
+			    return this;
+			  },
 
-			// UserView definition
-			var UserView = Backbone.View.extend({
-				// We will use Underscore template
-				template: _.template('Hello <%= firstName %> <%= lastName %>!'),
+			  showUserName: function () {
+			    console.log('Clicked user\'s name: ' + this.model.get('name'));
+			  },
 
-				render: function() {
-					if (!this.model) {
-						throw "Model is not set for this view";
-					};
+			  alertUserName: function() {
+			  	alert('Clicked user\'s name: ' + this.model.get('name'));
+			  }
+			});
 
-					var html = this.template(this.model.toJSON());
-					this.$el.html(html);
+			var UsersView = Backbone.View.extend({
+				tagName: 'ul',
+
+				render: function () {
+					// create a document fragment
+					var fragment = document.createDocumentFragment();
+
+					this.collection.each(function (model) {
+						// add each view element to the document fragment
+						fragment.appendChild(new UserItemView({
+							model: model
+						}).render().el);
+					}, this);
+
+					// append the fragment to the DOM
+					this.$el.html(fragment);
 					return this;
-				}
+				},
+
+				events: {
+					//'click li': 'alertUserName',
+				},
 			});
 
-			var CarView = Backbone.View.extend({
-				template: _.template('<table><thead><th>Make</th><th>Model</th></thead><tbody><td><%= make %></td><td><%= model %></td></tbody></table>'),
-
-				render: function() {
-					if (!this.model) {
-						throw "Model is not set for this view";
-					};
-
-					var html = this.template(this.model.toJSON());
-					this.$el.html(html);
-					return this;
-				}
+			var usersView = new UsersView({
+				// add the collection instance
+				collection: users
 			});
 
-			var userView = new UserView({
-				// Set a model for this view
-				model: new User({
-					firstName: 'Patrick',
-					lastName: 'Reynolds'
-				})
-			});
+			$(document.body).append(usersView.render().el);
 
-			var carView = new CarView({
-				model: new Car({
-					make: "BMW",
-					model: "335i"
-				})
-			});
-
-			$("#container").append(userView.render().el);
-			$("#container").append(carView.render().el);
 		</script>
 	</body>
 </html>
-
-
-
-
-
-
-
-
-
-
 
 
