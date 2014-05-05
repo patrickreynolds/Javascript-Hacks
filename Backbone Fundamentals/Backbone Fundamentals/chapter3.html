@@ -12,31 +12,47 @@
 	</head>
 	<body>
 		<script type="text/javascript">
-			var Car = Backbone.Model.extend({});
-
-			var newCar = new Car({
-				make: "BMW",
-				model: "335",
-				year: "2008",
-				price: "20000"
+			var Car = Backbone.Model.extend({
+				url: '/cars',
+				defaults :function() {
+					return {
+						make: '',
+						model: '',
+						year: '',
+						price: '',
+						extras: []
+					}
+				}
 			});
 
-			var carData = JSON.stringify(newCar);
-			console.log(carData);
-
-			newCar.on('change' , function(model, options){
-  				console.log(model.changed);
+			var bmw = new Car({
+				id: 1,
+				make: 	"BMW",
+				model: 	"335",
+				year: 	"2008",
+				price: 	"20000",
+				extras: Array("Hood Scoop", "New Emblems")
+			});
+			var audi = new Car({
+				id: 2,
+				make: 	"Audi",
+				model: 	"A4",
+				year: 	"2009",
+				price: 	"18000",
+				extras: Array("Tinted Windows", "Black Rims")
 			});
 
-			newCar.on('change:year', function(model, newYear){
-				console.log(newYear);
+			var car = new Car({
+				id: 2
 			});
 
-			newCar.set('year', "2009");
-			newCar.set('model', 'm3');
+			bmw.save();
+			audi.save();
 
-			var carData = JSON.stringify(newCar);
-			console.log(carData);
+
+			//bmw.fetch();
+			//audi.fetch();
+			car.fetch();
 
 		</script>
 	</body>

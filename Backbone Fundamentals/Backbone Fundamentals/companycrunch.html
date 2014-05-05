@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Company Cruncher</title>
+		<meta charset="utf-8">
+		<link   type="text/css" rel="stylesheet" href="../global/lib/bootstrap-3.1.1/css/bootstrap.min.css">
+	</head>
+	<body>
+		<div class="container">
+			<div class="row">
+				<div class="jumbotron content-container col-xs-12 col-sm-offset-2 col-sm-8">
+					<header>
+						<h3>CrunchBase Search</h3>
+						<p>This application was written by Patrick Reynolds for the CS497 first web application assignment. This application will search companies and listings via <a href="http://developer.crunchbase.com/">CrunchBase API</a> to fetch general company info.</p>
+
+						<br />
+
+						<div class="row">
+						  <div class="col-lg-offset-2 col-lg-8">
+						    <div class="input-group">
+						      <input type="text" class="form-control" placeholder="Search a company name ie. Snapchat, Facebook, Google" id="company-search" value="facebook">
+						      <span class="input-group-btn">
+						        <button class="btn btn-default" type="submit" id="search">Search</button>
+						      </span>
+						    </div>
+						  </div>
+						</div>
+					</header>
+
+					<br />
+					<div class="results-table row"></div>
+
+					<script type="text/template" id="company-list-template">
+					<table class="table striped">
+						<thead>
+							<tr>
+								<th>Logo</th>
+								<th>Name</th>
+								<th>Industry</th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody>
+							<% _.each(companies, function(company){ %>
+								<tr>
+									<td><%- company.get('image.available_sizes[0][1]') %></td>
+									<td><%- company.get('name') %></td>
+									<td><%-	company.get('category_code') %></td>
+									<td><a href="#" class="btn btn-default">Edit</a></td>
+								</tr>
+							<% }); %>
+						</tbody>
+					</script>
+
+
+					<footer class="footer">
+						<p>Designed and Developed by Patrick Reynolds - March 20, 2014</p>
+					</footer>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript" src="../global/lib/jquery.min.js"></script>
+		<script type="text/javascript" src="../global/lib/underscore-min.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone-min.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone.localStorage.js"></script>
+		<script type="text/javascript" src="../global/lib/backbone.marionette.js"></script>
+		<script type="text/javascript" src="../global/lib/bootstrap-3.1.1/js/bootstrap.min.js"></script>
+
+		<script type="text/javascript">
+
+		// API query prefilter
+		$.ajaxPrefilter( function( options, originalOptions, jqXHR ) {
+      		options.url =  "http://api.crunchbase.com/v/1/search.js?query="+ options.url +"&api_key=y3md5t635tzkekc697ztg74k"
+    	});
+
+	    $.fn.serializeObject = function() {
+	      var o = {};
+	      var a = this.serializeArray();
+	      $.each(a, function() {
+	          if (o[this.name] !== undefined) {
+	              if (!o[this.name].push) {
+	                  o[this.name] = [o[this.name]];
+	              }
+	              o[this.name].push(this.value || '');
+	          } else {
+	              o[this.name] = this.value || '';
+	          }
+	      });
+	      return o;
+	    };
+
+		// ========	Collection ======== 
+		var Companies = Backbone.Collection.extend({
+			url: ''+ $('#company-search').val() +''
+		});
+
+		// ======== Models ========
+		var Company = Backbone.Model.extend({
+			urlRoot: ''+ $('#company-search').val() +''
+		});
+
+		// ======== Views ========
+		var CompanyList = Backbone.View.extend({
+			el: '.results-table',
+			render: function () {
+				var that = this;
+				var companies = new Companies();
+				companies.fetch({
+					success: function (companies) {
+						var template = _.template($('#company-list-template').html(), {companies: companies.models});
+						that.$el.html(template);
+					}
+				});
+			}
+		});
+
+		// ======== Routers ========
+		var Router = Backbone.Router.extend({
+			routes: {
+				'': 'home',
+				'click #search': 'home'
+				// 'new': 'editUser',
+				// 'edit/:id': 'editUser'
+			}
+		});
+
+		var companyList = new CompanyList();
+		var router = new Router();
+
+		router.on('route:home', function (){
+			companyList.render();
+		});
+
+		// ======== Histroy ======== 
+		Backbone.history.start();
+
+		</script>
+	</body>
+</html>
+
+
