@@ -1,0 +1,188 @@
+<!--
+Design patters are proven solutions to common development problems 
+that can help us imporve the oranization and structure of our applications.
+
+MVC: An architectural design pattern that encourages improved application organization 
+through a separation of concerns. It enforces the isolation of business data (Models)
+from user interfaces (Views), with a third component (Controllers) traditionally managing logic, 
+user-input, and coordination of Models and Views.
+
+*/
+
+/* Client-Side MVC - Backbone Style -->
+
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<meta charset="utf-8">
+		<title>Backbone Todo</title>
+		<meta name="description" content="">
+	</head>
+	<body>
+		<div id="todo">
+		</div>
+		<script type="text/template" id="item-template">
+			<div>
+				<input id="todo_complete" type="checkbox" <%= completed ? 'checked="checked"' : '' %> />
+				<%= title %>
+			</div>
+		</script>
+
+		<script src="global/lib/jquery.min.js"></script>
+		<script src="global/lib/underscore-min.js"></script>
+		<script src="global/lib/backbone-min.js"></script>
+		<script type="text/javascript">
+		// demo.js
+
+
+		// Backbone Model instances are used to hold the data for each Todo item
+		// Define a Todo Model
+		var Todo = Backbone.Model.extend({
+			defaults: {
+				title: '',
+				completed: false
+			}
+		});
+
+		// Instantiate the Todo Model with a title, with the completed attribute defaulting to false
+		var myTodo = new Todo({
+			title: 'Check attributes property of the logged models in the console.'
+		});
+
+
+		// Each Todo instance will be rendered on the page by a TodoView:
+		var TodoView = Backbone.View.extend({
+			tagName: 'li',
+
+			// Cache the template function for a single item.
+			todoTpl: _.template( $('#item-template').html() ),
+
+			events: {
+				'dblclick label': 'edit',
+				'keypress .edit': 'updateOnEnter',
+				'blur .edit': 'close'
+			},
+
+			// Called when the view is first created
+			initialize: function() {
+				this.$el = $('#todo');
+				// Later we'll look at:
+				// this.listenTo(someCollection, 'all', this.render);
+				// but you can actually run this example right now by 
+				// calling todoView.render();
+			},
+
+			// Re-render the titles of the todo item.
+			render: function() {
+				this.$el.html( this.todoTpl( this.model.toJSON() ) );
+				// $el here is a reference to the jQuery element
+				// associated with the view, todoTpl is a reference
+				// to an Underscore template and toJSON() returns an 
+				// object containing the model's attributes
+				// Altogether, the statement is replacing the HTML of
+				// a DOM element with the result of instantiating a 
+				// template with the model's attributes.
+				this.input = this.$('.edit');
+				return this;
+			},
+
+			edit: function() {
+				// executed when todo label is double clicked
+				console.log("Edit event called.");
+			},
+
+			close: function() {
+				// executed when todo loses focus
+				console.log("Close event called.");
+			},
+
+			updateOnEnter: function( e ) {
+				// executed on each keypress when it todo edit mode,
+				// but we'll wait for enter to get in action
+				console.log("Update view on enter.");
+			}
+		});
+
+		// create a view for a todo
+		var todoView = new TodoView({model: myTodo });
+		</script>
+	</body>
+
+<!-- 
+Backbone Models:
+- Validation of attributes, where attributes represent the properties of the Model, such as a Model identifier
+
+- Persistance allows us to edit and upate Models with the knowledge that their most recent states will be saved somewhere. An example of this in a web browser's localStorage data-store or synchronized with a database.
+
+- A model may have multiple Views observing it for changes. By observing we mean that a View has registered an interest in being informed whenever an update is made to the Model. This allows the View to ensure that what is displayed on screen is kept in sync with the data contained in the model. Depending on your requirements, you might create a single View displaying all Model attributes, or create separate Views displaying different attributes. The important point is that the Model doesn't care how these Views are organized, it simply announces updates to its data as necessary through the framework's event system.
+
+- It is not uncommon for modern MVC/MV* frameworks to provide a means of grouping Models together. In Backbone, these groups are called Collections. Managing Models in groups allows us to write application logic based on notifications from the group when a Model within the group changes. This avoids the need to manually observe individual Model instances. We'll see this in action later in the book. Collections are also useful for performing any aggregate computations across more than one 
+
+
+Backbone Views:
+- Users interact with Views, which usually means reading and editing Model data. For example, in our Todo application, Todo Model viewing happens in the user interface in the list of all Todo items. Within it, each Todo is rendered with its title and completed checkbox. Model editing is done through an "edit" View where a user who has selected a specific Todo edits its title in a form.
+
+- We define a render() utility within our View which is responsible for rendering the contents of the Model using a JavaScript templating engine (provided by Underscore.js) and updating the contents of our View, referenced by this.$el.
+
+- We then add our render() callback as a Model subscriber, so the View can be triggered to update when the Model changes.
+
+- You may wonder where user interaction comes into play here. When users click on a Todo element within the View, it's not the View's responsibility to know what to do next. A Controller makes this decision. In Backbone, this is achieved by adding an event listener to the Todo's element which delegates handling of the click to an event handler.
+
+-->
+
+<!-- Handlebars.js VS. Underscore.js Templating -->
+
+<!-- handlebars.js -->
+<div class="view">
+	<input class="toggle" type="checkbox" {{#if completed}} "checked" {{/if}}>
+	<label>{{title}}</label>
+	<button class="destroy"></button>
+</div>
+<input class="edit" value="{{title}}">
+
+<!-- underscore.js -->
+<div class="view">
+	<input class="toggle" type="checkbox" <%= completed ? 'checked' : '' %>>
+	<button class="destroy"></button>
+</div>
+<input class="edit" value="<%= title %>">
+
+<!--
+Backbone Router:
+In present day applications, the responsiblity of navigation falls under the 'router'. The router
+manages the application state (eg. Gmail #inbox, #sharred, #important). This allows browsers to bookmark particular page states.
+
+This will be discussed in a later chapter.
+ -->
+
+ <!-- 
+Backbone Controllers: 
+
+- In our Todo application, a Controller would be responsible for handling changes the user made in the edit View for a particular Todo, updating a specific Todo Model when a user has finished editing.
+
+- It's with Controllers that most JavaScript MVC frameworks depart from the traditional interpretation of the MVC pattern. The reasons for this vary, but in my opinion, JavaScript framework authors likely initially looked at server-side interpretations of MVC (such as Ruby on Rails), realized that the approach didn't translate 1:1 on the client-side, and so re-interpreted the C in MVC to solve their state management problem. This was a clever approach, but it can make it hard for developers coming to MVC for the first time to understand both the classical MVC pattern and the "proper" role of Controllers in other JavaScript frameworks. See lines 60 - 64, and 89 - 104.
+
+- So does Backbone.js have Controllers? Not really. Backbone's Views typically contain "Controller" logic, and Routers are used to help manage application state, but neither are true Controllers according to classical MVC.
+
+- In this respect, contrary to what might be mentioned in the official documentation or in blog posts, Backbone isn't truly an MVC framework. It's in fact better to see it a member of the MV* family which approaches architecture in its own way. There is of course nothing wrong with this, but it is important to distinguish between classical MVC and MV* should you be relying on discussions of MVC to help with your Backbone projects.
+
+-->
+
+<!-- 
+For further reading of MVC js frameworks, and additional context, see MVP (Model-View-Presenter) section in the apendix.
+
+Fast Facts
+- Core components: Model, View, Collection, Router. Enforces its own flavor of MV*
+- Event driven communication between Views and Models. As we'll see, it's relatively straight-forward to add event listeners to any attribute in a Model, giving developers fine-grained congtrol over what changes in the View
+- Supports data bindings through manual events or a separate Key-value observing library
+- Support for RESTful interfaces out of the box, so Models can be easily tied to a backend.
+- Prototypes are instantiated with the new keyworkd, which some developers prefer
+- Agnostic about templating frameworks, however Underscore's micro-templating is available by default
+- Clear and flexible conventions for structuring applications. Backbone doesn't force usage of all of its components and can work with only those needed.
+
+-->
+
+
+
+
+
