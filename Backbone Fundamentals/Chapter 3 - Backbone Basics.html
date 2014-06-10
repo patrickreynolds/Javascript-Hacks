@@ -1355,45 +1355,215 @@ var view = new View();
 
 <!-- Routers -->
 <script type="text/javascript">
-
 // =====================================
+// Routers provide a way for you to connect URLs to parts of your applciation. ANy piece of your application that you want to be bookmarkable, shareable, and back-button-able, needs a URL.
 
+// Examples
+// http://example.com/#about
+// http://example.com/#search/seasonal-horns/page2
+
+// Routes relationships are defined as follows:
+// 'route' : 'mappedFunction'
 
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Defining our first router by extending Backbone.Router. For the purposes of this guide, we're going to continue pretending we're created a complex todo application that requires a complex TodoRouter
+
+var TodoRouter = backbone.Router.extend({
+	/* define the route and fnction maps for this router */
+	routes: {
+		"about" : "showAbout",
+		/* Sample usage: http://example.com/#about */
+
+		"todo/:id" : "getTodo",
+		/* This is an example of using a ":param" variable which allows us to match
+		any of the components between two URL slashes */
+		/* Sample usage: http://example.com/#todos/5 */
+
+		"search/:query" : "searchTodos",
+		/* We can also define multiple routes that are bound to the same map function, 
+		in this case searchTodos(). Note below how we're optionally passing in a refernce to a page number if one is supplied */
+		/* Sample usage: http://example.com/#search/job */
+
+		"search/:query/p:page" : "searchTodos",
+		/* As we can see, URLs may contain as many ":param"s as we wish */
+		/* Sample usage: http://example.com/#search/job/p1 */
+
+		"todos/:id/download/*documentPath" : "downloadDocument",
+		/* This is an example of using a #splat. Splats are able to match any number of URL components and can be compined with ":params"s */
+		/* Sample usage: http://example.com/#todos/5/download/files/Meeting_schedule.doc */
+
+		/* If you wish to use splats for anything beyond default routing, it's probably a good idea to leave them at the end of a URL otherwise you may need to apply regular expression parsing on your fragment */
+
+		"*other"	: "defaultRoute",
+		/* This is a default route that also uses a *splat. Consider the default route a wildcard for URLs that are wither not matched or where the user has incorrectly typed in a route path manually */
+		/* Sample usage: http://example.com/# <anything> */
+
+		"optional(/:item" : "optionalItem",
+		"named/optional/(y:z)" : "namedOptionalItem"
+		/* Router URLs also support optional parts via parentheses, without having to use a regex. */
+	},
+
+	showAbout: function() {
+
+	},
+
+	getTodo: function(id) {
+		/*
+		Note that the id matched in the above route will be passed to this function
+		*/
+	},
+
+	searchTodos: function(query, page) {
+		var page_number = page || 1;
+		console.log("Page number: " + page_number + " of the results for todos contining the word: " + query);
+	},
+
+	downloadDocument: function( id, path ) {
+	},
+
+	defaultRoute: function( other ) { 
+		console.lgo('Invalid. YOu attemped to reach:' + other);
+	}
+});
+
+/* Now that we have a router setup, we need to insantiate it */
+
+var myTodoRouter = new TodoRouter();
 
 // =====================================
+// Backbone.history
+// Next we need to initialize Backbone.history as it handles hashchange events in our application. This will automaticallyhandle routes that have been defined and trigger callbacks when they've been accessed.
 
+// The Backbone.history.start() method will simply tell Backbone that it's okay to begin monitoring all hashchange events as follows:
+var TodoRouter = Backbone.Router.extend({
+  /* define the route and function maps for this router */
+  routes: {
+    "about" : "showAbout",
+    "search/:query" : "searchTodos",
+    "search/:query/p:page" : "searchTodos"
+  },
 
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  showAbout: function(){},
 
-// =====================================
+  searchTodos: function(query, page){
+    var page_number = page || 1;
+    console.log("Page number: " + page_number + " of the results for todos containing the word: " + query);
+  }
+});
 
+var myTodoRouter = new TodoRouter();
 
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Backbone.history.start();
 
-// =====================================
-
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-// =====================================
-
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-// =====================================
-
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-// =====================================
-
-
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+// Go to and check console:
+// http://localhost/#search/job/p3   logs: Page number: 3 of the results for todos containing the word: job
+// http://localhost/#search/job      logs: Page number: 1 of the results for todos containing the word: job 
+// etc.
 </script>
 
 
+<script type="text/javascript">
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Backbone's Sync API
+// We previously discussed how Backbone supports RESTful persistence via its fetch() and create() methods on Collections and save(), and destroy() methods on Models. Now we are going to take a closer look at Backbone's sync method which underlies these operations.
+
+// Common methodMap by the standard sync implementation to map the method parameter to anHTTP operation and illustrates the type of action requred by each method argument:
+var methodMap = {
+  'create': 'POST',
+  'update': 'PUT',
+  'patch':  'PATCH',
+  'delete': 'DELETE',
+  'read':   'GET'
+};
+
+// If we wanted to replace the standard sync implementatio nwith one that simple logged the calls to sync, we could do this:
+var id_counter = 1;
+Backbone.sync = function(method, model) {
+  console.log("I've been passed " + method + " with " + JSON.stringify(model));
+  if(method === 'create'){ model.set('id', id_counter++); }
+};
+
+// The Backbone.sync method is intended to be overridden to support other persistence backends. The built-in method is tailored to a certain breed of RESTful JSON APIs - Backbone was originally extracted from a Ruby on Rails application, which uses HTTP methods like PUT in the same way.
+
+/*
+The sync method is called with three parameters:
+method: One of create, update, patch, delete, or read
+model: The Backbone model object
+options: May include success and error methods
+*/
+
+//Implementing a new sync method can use the following pattern:
+// =====================================
+Backbone.sync = function(method, model, options) {
+
+  function success(result) {
+    // Handle successful results from MyAPI
+    if (options.success) {
+      options.success(result);
+    }
+  }
+
+  function error(result) {
+    // Handle error results from MyAPI
+    if (options.error) {
+      options.error(result);
+    }
+  }
+
+  options || (options = {});
+
+  switch (method) {
+    case 'create':
+      return MyAPI.create(model, success, error);
+
+    case 'update':
+      return MyAPI.update(model, success, error);
+
+    case 'patch':
+      return MyAPI.patch(model, success, error);
+
+    case 'delete':
+      return MyAPI.destroy(model, success, error);
+
+    case 'read':
+      if (model.cid) {
+        return MyAPI.find(model, success, error);
+      } else {
+        return MyAPI.findAll(model, success, error);
+      }
+  }
+};
+
+// Thispatter delegates API calls to a new object (MyAPI), which could be a Backbone-style class that supports events. This can be safely tested separately, and potentially used with libraries other than Backbone.
+
+/*
+There are quite a few sync implementations out there. The following examples are all available on GitHub:
+Backbone localStorage: persists to the browser's local storage
+Backbone offline: supports working offline
+Backbone Redis: uses Redis key-value store
+backbone-parse: integrates Backbone with Parse.com
+backbone-websql: stores data to WebSQL
+Backbone Caching Sync: uses local storage as cache for other sync implementations
+*/
+
+</script>
+
+<!-- Chapter Summary -->
+<script type="text/javascript">
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+// Summary
+
+// Overview of Backbone components:
+// 1. Models
+// 2. Views
+// 3. Collections
+// 4. Routes
+
+// Events mix-in that Backbone uses to enhance all components with publish-subscribe capabilities and seen how it can be used with arbitraty objects.
+
+// We saw how Backbone leverages the Underscore.js and jQuery APIs to add manipulation and persistence features to Backbone Collections and Models.
+
+</script>
 
 
 
